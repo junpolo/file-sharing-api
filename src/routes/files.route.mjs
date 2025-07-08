@@ -2,6 +2,7 @@ import { Router } from "express";
 import multer from "multer";
 import crypto from "crypto";
 import fs from "fs";
+import path from "path";
 
 const router = Router();
 
@@ -95,6 +96,47 @@ router.get("/api/files/:publicKey", (request, response) => {
           .status(500)
           .send({ message: "Could not download the file." });
       }
+    });
+  });
+});
+
+router.delete("/api/files/:privateKey", (request, response) => {
+  const { privateKey } = request.params;
+
+  if (!privateKey) {
+    return response.status(400).send({ message: "Private key is required." });
+  }
+
+  fs.readdir(UPLOAD_DIR, (err, files) => {
+    if (err) {
+      return response
+        .status(500)
+        .send({ message: "Server error while accessing files." });
+    }
+
+    const foundFile = files.find((file) => file.includes(`_${privateKey}_`));
+
+    if (!foundFile) {
+      return response
+        .status(404)
+        .send({ message: "File not found or private key invalid." });
+    }
+
+    const filePath = path.join(UPLOAD_DIR, foundFile);
+
+    fs.unlink(filePath, (unlinkErr) => {
+      if (unlinkErr) {
+        if (unlinkErr.code === "ENOENT") {
+          return response
+            .status(404)
+            .json({ message: "File not found or already deleted." });
+        }
+        return response
+          .status(500)
+          .json({ message: "Failed to delete the file." });
+      }
+
+      response.status(200).json({ message: "File removed successfully!" });
     });
   });
 });
