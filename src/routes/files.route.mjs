@@ -6,29 +6,20 @@ const router = Router();
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    // 'uploads' directory must exist or Multer will throw an error
     cb(null, "uploads");
   },
-  filename: function (req, file, cb) {
+  filename: function (_, file, cb) {
     // Generate publicKey and privateKey directly within the filename function
     const publicKey = crypto.randomBytes(8).toString("hex");
     const privateKey = crypto.randomBytes(8).toString("hex");
 
-    // Store these keys on the request object for later use in your route handler
-    // This is a common pattern to pass data generated during file processing.
-    if (!req.fileKeys) {
-      req.fileKeys = {}; // Initialize if not present
-    }
-    req.fileKeys[file.fieldname] = {
-      // Use fieldname to handle multiple files if needed
-      publicKey: publicKey,
-      privateKey: privateKey,
-    };
+    file.publicKey = publicKey;
+    file.privateKey = privateKey;
 
     // Construct the new filename
     const originalNameParts = file.originalname.split(".");
-    const extension = originalNameParts.pop(); // Get the last part as extension
-    const baseName = originalNameParts.join("."); // Join the rest as base name
+    const extension = originalNameParts.pop();
+    const baseName = originalNameParts.join(".");
 
     const newFilename = `${publicKey}_${privateKey}_${baseName}.${extension}`;
     cb(null, newFilename);
@@ -43,9 +34,25 @@ router.post("/api/files", upload.array("files"), (request, response) => {
     return response.status(400).send({ message: "No files uploaded." });
   }
 
-  return response.status(200).json({
-    message: "Files uploaded successfully!",
+  // Process the uploaded files
+  const fileInfos = request.files.map((file) => {
+    return {
+      fileName: file.originalname, // Original name from the client
+      publicKey: file.publicKey,
+      privateKey: file.privateKey,
+    };
   });
-});
 
+  if (fileInfos.length === 1) {
+    return response.status(200).json({
+      message: "File uploaded successfully!",
+      file: fileInfos[0],
+    });
+  } else {
+    return response.status(200).json({
+      message: "Files uploaded successfully!",
+      files: fileInfos,
+    });
+  }
+});
 export default router;
