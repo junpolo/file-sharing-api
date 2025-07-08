@@ -1,7 +1,6 @@
 import { Router } from "express";
 
 import {
-  uploadMiddleware,
   getFileInfoResponse,
   findFileByPublicKey,
   deleteFileByPrivateKey,
@@ -11,13 +10,14 @@ import {
   fileUploadLimiter,
   fileDownloadLimiter,
 } from "../middlewares/ratelimit.middleware.js";
+import { multerMiddleware } from "../middlewares/multer.middleware.js";
 
 const router = Router();
 
 router.post(
   "/api/files",
   fileUploadLimiter,
-  uploadMiddleware,
+  multerMiddleware,
   (request, response) => {
     // Check if files were uploaded
     if (!request.files || request.files.length === 0) {
