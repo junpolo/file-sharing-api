@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 
 import filesRouters from "./routes/files.route.mjs";

@@ -1,12 +1,16 @@
 import { Router } from "express";
 import multer from "multer";
 import crypto from "crypto";
+import fs from "fs";
 
 const router = Router();
 
+const UPLOAD_DIR = process.env.FOLDER || "uploads";
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads");
+    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+    cb(null, UPLOAD_DIR);
   },
   filename: function (_, file, cb) {
     // Generate publicKey and privateKey directly within the filename function
@@ -55,4 +59,44 @@ router.post("/api/files", upload.array("files"), (request, response) => {
     });
   }
 });
+
+router.get("/api/files/:publicKey", (request, response) => {
+  const { publicKey } = request.params;
+
+  if (!publicKey) {
+    return response.status(400).send({ message: "Public key is required." });
+  }
+
+  // Read the directory to find the file matching the public key
+  fs.readdir(UPLOAD_DIR, (err, files) => {
+    if (err) {
+      return response
+        .status(500)
+        .send({ message: "Server error while accessing files." });
+    }
+
+    const foundFile = files.find((file) => file.startsWith(`${publicKey}_`));
+
+    if (!foundFile) {
+      return response.status(404).send({ message: "File not found." });
+    }
+
+    response.sendFile(foundFile, { root: UPLOAD_DIR }, (err) => {
+      if (err) {
+        if (err.code === "ENOENT") {
+          return response
+            .status(404)
+            .send({ message: "File not found or has been removed." });
+        }
+        if (err.code === "ECONNABORTED" || err.code === "ECONNRESET") {
+          return;
+        }
+        return response
+          .status(500)
+          .send({ message: "Could not download the file." });
+      }
+    });
+  });
+});
+
 export default router;
