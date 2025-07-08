@@ -1,12 +1,12 @@
 import "dotenv/config";
 import express from "express";
 
-import filesRouters from "./routes/files.route.mjs";
+import filesRouter from "./routes/files.route.js";
 
 const app = express();
 
 app.use(express.json());
-app.use(filesRouters);
+app.use(filesRouter);
 
 const PORT = process.env.PORT || 3000;
 
