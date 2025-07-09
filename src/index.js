@@ -12,9 +12,11 @@ app.use(filesRouter);
 const PORT = process.env.PORT || 3000;
 
 app.get("/", (_, response) => {
-  response.send("Hello World");
+  response.status(200).json({ message: "OK" });
 });
 
 app.listen(PORT, () => {
   console.log(`Running on PORT: ${PORT}`);
 });
+
+export default app;
