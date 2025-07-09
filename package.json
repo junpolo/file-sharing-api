@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest --runInBand --force-exit",
+    "test": "jest --runInBand --force-exit --coverage",
     "start": "nodemon ./src/index.js"
   },
   "keywords": [],
