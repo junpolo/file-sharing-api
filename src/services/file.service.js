@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 
 const UPLOAD_DIRECTORY = process.env.FOLDER || "uploads";
-const FILE_AGE_LIMIT = 1000 * 60 * 60; // 1hr
+const FILE_AGE_LIMIT = 1000 * 60 * 5; // 5 minute old file
 export const uploadDir = path.resolve("./", UPLOAD_DIRECTORY);
 
 export const getFileInfoResponse = (files) => {
@@ -70,7 +70,6 @@ export const deleteFileByPrivateKey = async (privateKey) => {
 export const deleteOldFiles = () => {
   if (!fs.existsSync(uploadDir)) return;
 
-  console.log("here");
   const now = Date.now();
 
   fs.readdirSync(uploadDir).forEach((file) => {
