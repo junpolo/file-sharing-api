@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 
 import filesRouter from "./routes/files.route.js";
+import "./services/cron.service.js";
 
 const app = express();
 
