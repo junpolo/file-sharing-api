@@ -7,7 +7,7 @@ import {
   deleteFileByPrivateKey,
   deleteOldFiles,
   uploadDir,
-} from "../../services/file.service.js"; // Update this path to match your service file location
+} from "../../services/file.service.js";
 
 // Mock the fs modules
 jest.mock("fs", () => ({
